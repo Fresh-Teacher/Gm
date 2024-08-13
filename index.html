@@ -1,1 +1,188 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GM General Stores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        header .logo h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #hero {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        #hero h2 {
+            font-size: 2em;
+        }
+
+        #about, #services, #contact {
+            padding: 20px;
+            text-align: center;
+        }
+
+        #services ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #services ul li {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        #contact-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #contact-form label {
+            margin-top: 10px;
+        }
+
+        #contact-form input, #contact-form textarea {
+            width: 80%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #contact-form button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #contact-form button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>GM General Stores</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Your Trusted Local Store</h2>
+        <p>Providing quality products for over 20 years.</p>
+    </section>
+
+    <section id="about">
+        <h2>About Us</h2>
+        <p>GM General Stores is a family-owned business dedicated to serving the community with a wide range of products at competitive prices. We value our customers and strive to provide excellent customer service.</p>
+    </section>
+
+    <section id="services">
+        <h2>Our Services</h2>
+        <ul>
+            <li>Grocery Items</li>
+            <li>Household Products</li>
+            <li>Personal Care</li>
+            <li>Stationery</li>
+            <li>Seasonal Products</li>
+        </ul>
+    </section>
+
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <form id="contact-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+
+            <button type="submit">Send Message</button>
+        </form>
+        <p id="response"></p>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 GM General Stores. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+
+            if (name && email && message) {
+                document.getElementById('response').innerText = `Thank you, ${name}! We have received your message.`;
+            } else {
+                document.getElementById('response').innerText = `Please fill in all fields.`;
+            }
+
+            // Reset the form
+            document.getElementById('contact-form').reset();
+        });
+    </script>
+</body>
+</html>
