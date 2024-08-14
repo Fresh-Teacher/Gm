@@ -147,6 +147,9 @@ nav {
         #cart-modal.open {
             right: 0;
         }
+        #cart-modal.sliding-out {
+    right: -100%;
+}
         #cart-modal h2 {
             background-color: #333;
             color: white;
@@ -344,6 +347,80 @@ nav {
 #next-button {
     right: 15px;
 }
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 5px;
+}
+
+.modal-buttons {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+#modal-yes {
+    background-color: #007bff;
+    color: white;
+}
+
+#modal-no {
+    background-color: #dc3545;
+    color: white;
+}
+
+#modal-yes:hover {
+    background-color: #0056b3;
+}
+
+#modal-no:hover {
+    background-color: #c82333;
+}
+.remove-item {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.remove-item:hover {
+    background-color: #ff1a1a;
+}
+#remove-item-yes {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+#remove-item-no {
+    background-color: #4CAF50;
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -364,6 +441,17 @@ nav {
             <img id="preview-image" src="" alt="Preview">
         </div>
     </div>
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Order</h2>
+            <p>Are you sure you would like to place the orders for the following items?</p>
+            <div id="modal-items"></div>
+            <div class="modal-buttons">
+                <button id="modal-yes">YES</button>
+                <button id="modal-no">NO</button>
+            </div>
+        </div>
+    </div>
     <div id="cart-modal">
         <h2>Your Cart 🛒 <span id="close-cart">&times;</span></h2>
         <ul id="cart-items"></ul>
@@ -371,9 +459,25 @@ nav {
         <button id="confirm-order">CONFIRM ORDER</button>
     </div>
 
+    <div id="remove-item-modal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Removal</h2>
+            <p>Are you sure you want to remove this item from your cart?</p>
+            <div class="modal-buttons">
+                <button id="remove-item-yes">Yes, remove it</button>
+                <button id="remove-item-no">No, keep it</button>
+            </div>
+        </div>
+    </div>
+
     <div id="flash-message"></div>
 
     <script>
+        let itemToRemove = null;
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || {};
+
+        
         function generateOrderMessage() {
     let message = "Hello, I would like to buy the following items:\n";
     let itemNumber = 1;
@@ -385,14 +489,52 @@ nav {
     return encodeURIComponent(message);
 }
 
-function confirmOrder() {
-    const phoneNumber = "+256757916929"; // Replace with the actual phone number
-    const message = generateOrderMessage();
-    const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
-    window.open(whatsappURL, '_blank');
+function showConfirmModal() {
+    const modal = document.getElementById('confirm-modal');
+    const modalItems = document.getElementById('modal-items');
+    modalItems.innerHTML = '';
+
+    Object.values(cart).forEach(item => {
+        const p = document.createElement('p');
+        p.textContent = `${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}`;
+        modalItems.appendChild(p);
+    });
+
+    modal.style.display = 'block';
 }
 
-document.getElementById('confirm-order').addEventListener('click', confirmOrder);
+function hideConfirmModal() {
+    document.getElementById('confirm-modal').style.display = 'none';
+}
+
+function proceedWithOrder() {
+    const phoneNumber = "+256757916929";
+    const message = generateOrderMessage();
+    const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+    
+    // Close the confirm modal
+    hideConfirmModal();
+    
+    // Slide and close the cart modal
+    const cartModal = document.getElementById('cart-modal');
+    cartModal.classList.add('sliding-out');
+    
+    // Wait for the animation to complete before opening WhatsApp and clearing the cart
+    setTimeout(() => {
+        cartModal.classList.remove('open', 'sliding-out');
+        window.open(whatsappURL, '_blank');
+        clearCart();
+    }, 500); // Adjust this timing to match your CSS animation duration
+}
+
+// Event listeners
+document.getElementById('confirm-order').addEventListener('click', showConfirmModal);
+document.getElementById('modal-yes').addEventListener('click', proceedWithOrder);
+document.getElementById('modal-no').addEventListener('click', hideConfirmModal);
+
+// Initialize the cart when the page loads
+window.addEventListener('load', initializeCart);
+
 
 const products = [
     { id: 1, name: "Azam Home Baking Flour", price: 8000, discountPercentage: 20, images: ["Azam Home Baking Flour.jpg", "azam (1).jpg", "azam (2).jpg"] },
@@ -402,11 +544,10 @@ const products = [
     { id: 5, name: "Magic Detergent (sachet)", price: 7000, discountPercentage: 25, images: ["magic.jpg", "magic (1).jpg", "magic (2).jpg"] },
     { id: 6, name: "Roki Roki Vegetable Cooking Oil - 3L", price: 23100, discountPercentage: 12, images: ["roki 3 litres.jpg", "roki 2l (1).jpg", "roki 2l (2).jpg"] },
     { id: 7, name: "Roki Roki Vegetable Cooking Oil - 5L", price: 37300, discountPercentage: 18, images: ["roki 5 litres.jpg", "roki 5l (1).jpg", "roki 5l (2).jpg"] },
-    { id: 8, name: "Royco Mchuzi Mix Chicken, 200g - Yellow", price: 12000, discountPercentage: 8, images: ["royco blue.jpg", "yellow royco (1).jpg", "yellow royco (2).jpg"] },
+    { id: 8, name: "Royco Mchuzi Mix Chicken, 200g - Yellow", price: 12000, discountPercentage: 8, images: ["royco blue.jpg", "", ""] },
     { id: 9, name: "Royco Mchuzi Mix Beef 500g", price: 23000, discountPercentage: 22, images: ["royco green.jpg", "beef royco (1).jpg", "beef royco (2).jpg"] },
     { id: 10, name: "Supreme Flour Home Baking Flour - 2kg", price: 6800, discountPercentage: 30, images: ["supreme.jpg", "supreme (1).jpg", "supreme (2).jpg"] },
 ];
-        const cart = {};
 
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
@@ -470,6 +611,20 @@ document.getElementById('next-button').addEventListener('click', () => navigateP
         `;
         productsContainer.appendChild(card);
     });
+    updateAllQuantityDisplays();
+
+}
+
+function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function clearCart() {
+    cart = {};
+    saveCart();
+    updateCartCount();
+    updateCartModal();
+    renderProducts(products);
 }
 
 function addToCart(productId) {
@@ -482,35 +637,38 @@ function addToCart(productId) {
     }
     updateCartCount();
     updateCartModal();
+    saveCart();
 }
 
-        function incrementQuantity(productId) {
-            if (!cart[productId]) {
-                addToCart(productId);
-            } else {
-                cart[productId].quantity++;
-                updateQuantityDisplay(productId, cart[productId].quantity);
-                showFlashMessage(`Increased quantity of ${cart[productId].name}`, 'success');
-                updateCartCount();
-                updateCartModal();
-            }
-        }
+function incrementQuantity(productId) {
+    if (!cart[productId]) {
+        addToCart(productId);
+    } else {
+        cart[productId].quantity++;
+        updateQuantityDisplay(productId, cart[productId].quantity);
+        showFlashMessage(`Increased quantity of ${cart[productId].name}`, 'success');
+        updateCartCount();
+        updateCartModal();
+        saveCart();
+    }
+}
 
-        function decrementQuantity(productId) {
-            if (cart[productId]) {
-                cart[productId].quantity--;
-                if (cart[productId].quantity === 0) {
-                    delete cart[productId];
-                    updateQuantityDisplay(productId, 0);
-                    showFlashMessage(`${products.find(p => p.id === productId).name} removed from cart`, 'error');
-                } else {
-                    updateQuantityDisplay(productId, cart[productId].quantity);
-                    showFlashMessage(`Decreased quantity of ${cart[productId].name}`, 'success');
-                }
-                updateCartCount();
-                updateCartModal();
-            }
+function decrementQuantity(productId) {
+    if (cart[productId]) {
+        cart[productId].quantity--;
+        if (cart[productId].quantity === 0) {
+            delete cart[productId];
+            updateQuantityDisplay(productId, 0);
+            showFlashMessage(`${products.find(p => p.id === productId).name} removed from cart`, 'error');
+        } else {
+            updateQuantityDisplay(productId, cart[productId].quantity);
+            showFlashMessage(`Decreased quantity of ${cart[productId].name}`, 'success');
         }
+        updateCartCount();
+        updateCartModal();
+        saveCart();
+    }
+}
 
         function updateQuantityDisplay(productId, quantity) {
             const addButton = document.getElementById(`add-${productId}`);
@@ -528,26 +686,76 @@ function addToCart(productId) {
         }
 
         function updateCartCount() {
-            const cartCount = document.getElementById('cart-count');
-            const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-        }
+    const cartCount = document.getElementById('cart-count');
+    const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+}
 
-        function updateCartModal() {
-            const cartItems = document.getElementById('cart-items');
-            const cartTotal = document.getElementById('cart-total');
-            cartItems.innerHTML = '';
-            let total = 0;
+function updateCartModal() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    const confirmOrderButton = document.getElementById('confirm-order');
+    cartItems.innerHTML = '';
+    let total = 0;
 
-            Object.values(cart).forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}`;
-                cartItems.appendChild(li);
-                total += item.price * item.quantity;
-            });
+    Object.values(cart).forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            ${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}
+            <button class="remove-item" data-id="${item.id}">Remove</button>
+        `;
+        cartItems.appendChild(li);
+        total += item.price * item.quantity;
+    });
 
-            cartTotal.textContent = `Total: ${formatCurrency(total)}`;
-        }
+    cartTotal.textContent = `Total: ${formatCurrency(total)}`;
+
+    if (Object.keys(cart).length > 0) {
+        confirmOrderButton.style.display = 'block';
+    } else {
+        confirmOrderButton.style.display = 'none';
+    }
+
+    // Add event listeners for remove buttons
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function() {
+            showRemoveItemModal(this.getAttribute('data-id'));
+        });
+    });
+}
+
+function showRemoveItemModal(productId) {
+    itemToRemove = parseInt(productId);
+    document.getElementById('remove-item-modal').style.display = 'block';
+}
+
+function hideRemoveItemModal() {
+    document.getElementById('remove-item-modal').style.display = 'none';
+}
+
+function removeItemFromCart() {
+    if (itemToRemove && cart[itemToRemove]) {
+        delete cart[itemToRemove];
+        saveCart();
+        updateCartCount();
+        updateCartModal();
+        renderProducts(products);
+        showFlashMessage(`Item removed from cart`, 'error');
+    }
+    hideRemoveItemModal();
+    itemToRemove = null;
+}
+
+// Event listeners for the remove item confirmation modal
+document.getElementById('remove-item-yes').addEventListener('click', removeItemFromCart);
+document.getElementById('remove-item-no').addEventListener('click', hideRemoveItemModal);
+
+// Close the remove item modal if user clicks outside of it
+window.addEventListener('click', function(event) {
+    if (event.target === document.getElementById('remove-item-modal')) {
+        hideRemoveItemModal();
+    }
+});
 
         function filterProducts() {
     const searchTerm = document.getElementById('search').value.toLowerCase();
@@ -560,12 +768,18 @@ function addToCart(productId) {
     updateAllQuantityDisplays();
 }
 
-        function updateAllQuantityDisplays() {
-            products.forEach(product => {
-                const quantity = cart[product.id] ? cart[product.id].quantity : 0;
-                updateQuantityDisplay(product.id, quantity);
-            });
-        }
+function updateAllQuantityDisplays() {
+    products.forEach(product => {
+        const quantity = cart[product.id] ? cart[product.id].quantity : 0;
+        updateQuantityDisplay(product.id, quantity);
+    });
+}
+// Call this function when the page loads
+function initializeCart() {
+    updateCartCount();
+    updateCartModal();
+    renderProducts(products);
+}
 
         function showFlashMessage(message, type) {
             const flashMessage = document.getElementById('flash-message');
@@ -580,12 +794,16 @@ function addToCart(productId) {
    
 
         document.getElementById('cart-icon').addEventListener('click', () => {
-            document.getElementById('cart-modal').classList.add('open');
-        });
+    document.getElementById('cart-modal').classList.add('open');
+});
 
-        document.getElementById('close-cart').addEventListener('click', () => {
-            document.getElementById('cart-modal').classList.remove('open');
-        });
+document.getElementById('close-cart').addEventListener('click', () => {
+    const cartModal = document.getElementById('cart-modal');
+    cartModal.classList.add('sliding-out');
+    setTimeout(() => {
+        cartModal.classList.remove('open', 'sliding-out');
+    }, 500);
+});
 
         renderProducts(products);
     </script>
