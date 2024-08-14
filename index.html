@@ -12,32 +12,32 @@
             background-color: #f4f4f4;
         }
         header {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 1em;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-        nav {
-            background-color: #444;
-            padding: 0.5em;
-            margin-top: 60px;
-        }
-        nav input, nav select {
-            margin: 0.5em;
-            padding: 0.5em;
-        }
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 0.5em; /* Reduced from 1em */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+nav {
+    background-color: #444;
+    padding: 0.5em;
+    margin-top: 10px; /* Reduced from 60px */
+    padding-bottom: 1em; /* Added padding at the bottom */
+}
+
+
         main {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            padding: 1em;
-            margin-top: 60px;
-        }
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 1em;
+    margin-top: 80px; /* Increased to account for the navbar and filter */
+}
         .card {
             background-color: white;
             border: 1px solid #ddd;
@@ -84,16 +84,16 @@
             padding: 0 0.5em;
         }
         #flash-message {
-            position: fixed;
-            top: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            padding: 1em;
-            border-radius: 5px;
-            z-index: 3000;
-            display: none;
-        }
+    position: fixed;
+    top: 50px; /* Reduced from 70px */
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    padding: 1em;
+    border-radius: 5px;
+    z-index: 3000;
+    display: none;
+}
         #flash-message.success {
             background-color: #4CAF50;
         }
@@ -158,7 +158,22 @@
             cursor: pointer;
             color: white;
         }
+        #confirm-order {
+    display: block;
+    width: 90%;
+    margin: 1em auto;
+    padding: 0.5em;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+}
 
+#confirm-order:hover {
+    background-color: #45a049;
+}
     </style>
 </head>
 <body>
@@ -169,38 +184,51 @@
             <span id="cart-count">0</span>
         </div>
     </header>
-    <nav>
-        <input type="text" id="search" placeholder="Search items...">
-        <select id="category">
-            <option value="">All Categories</option>
-            <option value="electronics">Electronics</option>
-            <option value="clothing">Clothing</option>
-            <option value="books">Books</option>
-        </select>
-    </nav>
+
     <main id="products"></main>
 
     <div id="cart-modal">
         <h2>Your Cart 🛒 <span id="close-cart">&times;</span></h2>
         <ul id="cart-items"></ul>
         <div id="cart-total">Total: 0 Shs.</div>
+        <button id="confirm-order">CONFIRM ORDER</button>
     </div>
 
     <div id="flash-message"></div>
 
     <script>
-        const products = [
-            { id: 1, name: "Azam Home Baking Flour", price: 8000, category: "electronics", image: "Azam Home Baking Flour.jpg" },
-            { id: 2, name: "Habari Salt 40pcs(Carton) - 500g", price: 24800, category: "electronics", image: "habari salt.jpg" },
-            { id: 3, name: "Jamaa Soap Cream 1*10KG", price: 50000, category: "clothing", image: "jamaa.jpg" },
-            { id: 4, name: "Kakira Sugar - 50Kg", price: 81000, category: "clothing", image: "kakira.jpg" },
-            { id: 5, name: "Magic Detergent (sachet)", price: 7000, category: "books", image: "magic.jpg" },
-            { id: 6, name: "Roki Roki Vegetable Cooking Oil - 3L", price: 23100, category: "books", image: "roki 3 litres.jpg" },
-            { id: 7, name: "Roki Roki Vegetable Cooking Oil - 5L", price: 37300, category: "clothing", image: "roki 5 litres.jpg" },
-            { id: 8, name: "Royco Mchuzi Mix Chicken, 200g - Yellow", price: 12000, category: "clothing", image: "royco blue.jpg" },
-            { id: 9, name: "Royco Mchuzi Mix Beef 500g", price: 23000, category: "books", image: "royco green.jpg" },
-            { id: 10, name: "Supreme Flour Home Baking Flour - 2kg", price: 6800, category: "books", image: "supreme.jpg" },
-        ];
+        function generateOrderMessage() {
+    let message = "Hello, I would like to buy the following items:\n";
+    let itemNumber = 1;
+    Object.values(cart).forEach(item => {
+        message += `${itemNumber}. ${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}\n`;
+        itemNumber++;
+    });
+    message += `\nTotal: ${document.getElementById('cart-total').textContent}`;
+    return encodeURIComponent(message);
+}
+
+function confirmOrder() {
+    const phoneNumber = "+256750687790"; // Replace with the actual phone number
+    const message = generateOrderMessage();
+    const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+    window.open(whatsappURL, '_blank');
+}
+
+document.getElementById('confirm-order').addEventListener('click', confirmOrder);
+
+const products = [
+    { id: 1, name: "Azam Home Baking Flour", price: 8000, image: "Azam Home Baking Flour.jpg" },
+    { id: 2, name: "Habari Salt 40pcs(Carton) - 500g", price: 24800, image: "habari salt.jpg" },
+    { id: 3, name: "Jamaa Soap Cream 1*10KG", price: 50000, image: "jamaa.jpg" },
+    { id: 4, name: "Kakira Sugar - 50Kg", price: 81000, image: "kakira.jpg" },
+    { id: 5, name: "Magic Detergent (sachet)", price: 7000, image: "magic.jpg" },
+    { id: 6, name: "Roki Roki Vegetable Cooking Oil - 3L", price: 23100, image: "roki 3 litres.jpg" },
+    { id: 7, name: "Roki Roki Vegetable Cooking Oil - 5L", price: 37300, image: "roki 5 litres.jpg" },
+    { id: 8, name: "Royco Mchuzi Mix Chicken, 200g - Yellow", price: 12000, image: "royco blue.jpg" },
+    { id: 9, name: "Royco Mchuzi Mix Beef 500g", price: 23000, image: "royco green.jpg" },
+    { id: 10, name: "Supreme Flour Home Baking Flour - 2kg", price: 6800, image: "supreme.jpg" },
+];
 
         const cart = {};
 
@@ -209,27 +237,26 @@
         }
 
         function renderProducts(productsToRender) {
-            const productsContainer = document.getElementById('products');
-            productsContainer.innerHTML = '';
+    const productsContainer = document.getElementById('products');
+    productsContainer.innerHTML = '';
 
-            productsToRender.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>${formatCurrency(product.price)}</p>
-                    <p>Category: ${product.category}</p>
-                    <button class="add-to-cart" id="add-${product.id}" onclick="addToCart(${product.id})">Add to Cart</button>
-                    <div class="quantity-control" id="quantity-${product.id}">
-                        <button onclick="decrementQuantity(${product.id})">-</button>
-                        <span>0</span>
-                        <button onclick="incrementQuantity(${product.id})">+</button>
-                    </div>
-                `;
-                productsContainer.appendChild(card);
-            });
-        }
+    productsToRender.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <h3>${product.name}</h3>
+            <p>${formatCurrency(product.price)}</p>
+            <button class="add-to-cart" id="add-${product.id}" onclick="addToCart(${product.id})">Add to Cart</button>
+            <div class="quantity-control" id="quantity-${product.id}">
+                <button onclick="decrementQuantity(${product.id})">-</button>
+                <span>0</span>
+                <button onclick="incrementQuantity(${product.id})">+</button>
+            </div>
+        `;
+        productsContainer.appendChild(card);
+    });
+}
 
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
@@ -308,17 +335,15 @@
         }
 
         function filterProducts() {
-            const searchTerm = document.getElementById('search').value.toLowerCase();
-            const category = document.getElementById('category').value;
+    const searchTerm = document.getElementById('search').value.toLowerCase();
 
-            const filteredProducts = products.filter(product => 
-                product.name.toLowerCase().includes(searchTerm) &&
-                (category === '' || product.category === category)
-            );
+    const filteredProducts = products.filter(product => 
+        product.name.toLowerCase().includes(searchTerm)
+    );
 
-            renderProducts(filteredProducts);
-            updateAllQuantityDisplays();
-        }
+    renderProducts(filteredProducts);
+    updateAllQuantityDisplays();
+}
 
         function updateAllQuantityDisplays() {
             products.forEach(product => {
@@ -337,8 +362,7 @@
             }, 3000);
         }
 
-        document.getElementById('search').addEventListener('input', filterProducts);
-        document.getElementById('category').addEventListener('change', filterProducts);
+   
 
         document.getElementById('cart-icon').addEventListener('click', () => {
             document.getElementById('cart-modal').classList.add('open');
