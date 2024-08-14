@@ -421,6 +421,12 @@ nav {
     background-color: #4CAF50;
     color: white;
 }
+.empty-cart-message {
+    font-style: italic;
+    color: #888;
+    text-align: center;
+    padding: 20px 0;
+}
     </style>
 </head>
 <body>
@@ -698,30 +704,33 @@ function updateCartModal() {
     cartItems.innerHTML = '';
     let total = 0;
 
-    Object.values(cart).forEach(item => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            ${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}
-            <button class="remove-item" data-id="${item.id}">Remove</button>
-        `;
-        cartItems.appendChild(li);
-        total += item.price * item.quantity;
-    });
-
-    cartTotal.textContent = `Total: ${formatCurrency(total)}`;
-
-    if (Object.keys(cart).length > 0) {
-        confirmOrderButton.style.display = 'block';
-    } else {
+    if (Object.keys(cart).length === 0) {
+        // Cart is empty
+        cartItems.innerHTML = '<li class="empty-cart-message"><em>Your cart is empty. Please add some items to start shopping.</em></li>';
+        cartTotal.textContent = 'Total: 0 Shs.';
         confirmOrderButton.style.display = 'none';
-    }
-
-    // Add event listeners for remove buttons
-    document.querySelectorAll('.remove-item').forEach(button => {
-        button.addEventListener('click', function() {
-            showRemoveItemModal(this.getAttribute('data-id'));
+    } else {
+        // Cart has items
+        Object.values(cart).forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}
+                <button class="remove-item" data-id="${item.id}">Remove</button>
+            `;
+            cartItems.appendChild(li);
+            total += item.price * item.quantity;
         });
-    });
+
+        cartTotal.textContent = `Total: ${formatCurrency(total)}`;
+        confirmOrderButton.style.display = 'block';
+
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', function() {
+                showRemoveItemModal(this.getAttribute('data-id'));
+            });
+        });
+    }
 }
 
 function showRemoveItemModal(productId) {
@@ -738,9 +747,9 @@ function removeItemFromCart() {
         delete cart[itemToRemove];
         saveCart();
         updateCartCount();
-        updateCartModal();
+        updateCartModal(); // This will now show the empty cart message if needed
         renderProducts(products);
-        showFlashMessage(`Item removed from cart`, 'error');
+        showFlashMessage(`Item removed from cart`, 'success');
     }
     hideRemoveItemModal();
     itemToRemove = null;
@@ -749,13 +758,6 @@ function removeItemFromCart() {
 // Event listeners for the remove item confirmation modal
 document.getElementById('remove-item-yes').addEventListener('click', removeItemFromCart);
 document.getElementById('remove-item-no').addEventListener('click', hideRemoveItemModal);
-
-// Close the remove item modal if user clicks outside of it
-window.addEventListener('click', function(event) {
-    if (event.target === document.getElementById('remove-item-modal')) {
-        hideRemoveItemModal();
-    }
-});
 
         function filterProducts() {
     const searchTerm = document.getElementById('search').value.toLowerCase();
