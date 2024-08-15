@@ -833,7 +833,7 @@ function removeItemFromCart() {
         updateCartCount();
         updateCartModal(); // This will now show the empty cart message if needed
         renderProducts(products);
-        showFlashMessage(`Item removed from cart`, 'success');
+        showFlashMessage(`Item removed from cart`, 'error');
     }
     hideRemoveItemModal();
     itemToRemove = null;
