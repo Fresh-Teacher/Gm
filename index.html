@@ -751,7 +751,7 @@ function decrementQuantity(productId) {
             showFlashMessage(`${products.find(p => p.id === productId).name} removed from cart`, 'error');
         } else {
             updateQuantityDisplay(productId, cart[productId].quantity);
-            showFlashMessage(`Decreased quantity of ${cart[productId].name}`, 'success');
+            showFlashMessage(`Decreased quantity of ${cart[productId].name}`, 'error');
         }
         updateCartCount();
         updateCartModal();
